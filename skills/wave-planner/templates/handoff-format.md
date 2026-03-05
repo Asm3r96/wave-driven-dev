@@ -15,3 +15,11 @@
 - Residual risk
 - Follow-up work
 - Any blocked dependencies
+
+6. Main plan log entry
+- One concise update to append to shared plan log.
+- Include key files touched.
+- Include tests added/updated/run and result.
+
+7. Completion marker
+- Exact text: WAVE {WAVE_ID} / {AGENT_NAME} DONE
