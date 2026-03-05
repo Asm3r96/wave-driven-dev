@@ -84,11 +84,7 @@ jobs:
           tag="${{ steps.bump.outputs.tag }}"
 
           if [ ! -f CHANGELOG.md ]; then
-            cat > CHANGELOG.md <<'EOC'
-# Changelog
-
-All notable changes to this project will be documented in this file.
-EOC
+            printf '# Changelog\n\nAll notable changes to this project will be documented in this file.\n' > CHANGELOG.md
           fi
 
           tmpfile="$(mktemp)"
@@ -137,7 +133,19 @@ EOC
           git push origin "$tag"
 
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.bump.outputs.tag }}
-          generate_release_notes: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          tag="${{ steps.bump.outputs.tag }}"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists"
+            exit 0
+          fi
+
+          gh release create "$tag" \
+            --title "Release $tag" \
+            --generate-notes
