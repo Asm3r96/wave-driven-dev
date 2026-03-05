@@ -1,6 +1,12 @@
 name: Release
 
 on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - VERSION
+      - CHANGELOG.md
   workflow_dispatch:
     inputs:
       bump:
@@ -34,13 +40,15 @@ jobs:
       - name: Bump version
         id: bump
         shell: bash
+        env:
+          BUMP_TYPE: ${{ github.event.inputs.bump || 'patch' }}
         run: |
           set -euo pipefail
 
           current="$(cat VERSION 2>/dev/null || echo "0.1.0")"
           IFS='.' read -r major minor patch <<< "$current"
 
-          case "${{ github.event.inputs.bump }}" in
+          case "$BUMP_TYPE" in
             major)
               major=$((major + 1))
               minor=0
