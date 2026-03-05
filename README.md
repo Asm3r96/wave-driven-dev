@@ -4,8 +4,6 @@ Wave-Driven Development for modern coding agents: plan once, execute in waves, p
 
 Tags: `wave-driven-development` `multi-agent` `acpx` `codex` `claude-code` `gemini` `openrouter` `pi` `planning` `orchestration`
 
-Suggested GitHub About text:
-`Wave-Driven Development skills for coding agents: contract-first planning, parallel wave execution, and controlled integration with acpx.`
 
 ![wave-driven-dev banner](./assets/wave-driven-dev-banner.png)
 
