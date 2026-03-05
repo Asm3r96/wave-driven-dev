@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current="$(cat VERSION 2>/dev/null || echo "0.1.0")"
+          IFS='.' read -r major minor patch <<< "$current"
+
+          case "${{ github.event.inputs.bump }}" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+            *)
+              echo "Invalid bump type" >&2
+              exit 1
+              ;;
+          esac
+
+          next="$major.$minor.$patch"
+          tag="v$next"
+
+          echo "$next" > VERSION
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Update changelog
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          today="$(date +%F)"
+          version="${{ steps.bump.outputs.version }}"
+          tag="${{ steps.bump.outputs.tag }}"
+
+          if [ ! -f CHANGELOG.md ]; then
+            cat > CHANGELOG.md <<'EOC'
+# Changelog
+
+All notable changes to this project will be documented in this file.
+EOC
+          fi
+
+          tmpfile="$(mktemp)"
+          {
+            echo "# Changelog"
+            echo
+            echo "All notable changes to this project will be documented in this file."
+            echo
+            echo "## [$tag] - $today"
+            echo "### Changed"
+            echo "- Release $tag"
+            echo
+            sed '1,4d' CHANGELOG.md || true
+          } > "$tmpfile"
+
+          mv "$tmpfile" CHANGELOG.md
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git add VERSION CHANGELOG.md
+
+          if git diff --cached --quiet; then
+            echo "No version changes to commit"
+            exit 0
+          fi
+
+          git commit -m "release: ${{ steps.bump.outputs.tag }}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Create and push tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${{ steps.bump.outputs.tag }}"
+
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists"
+            exit 1
+          fi
+
+          git tag -a "$tag" -m "Release $tag"
+          git push origin "$tag"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.tag }}
+          generate_release_notes: true
