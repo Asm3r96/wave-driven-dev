@@ -4,6 +4,9 @@ Wave-Driven Development for modern coding agents: plan once, execute in waves, p
 
 Tags: `wave-driven-development` `multi-agent` `acpx` `codex` `claude-code` `gemini` `openrouter` `pi` `planning` `orchestration`
 
+Suggested GitHub About text:
+`Wave-Driven Development skills for coding agents: contract-first planning, parallel wave execution, and controlled integration with acpx.`
+
 ![wave-driven-dev banner](./assets/wave-driven-dev-banner.png)
 
 `wave-driven-dev` provides two skills:
@@ -153,17 +156,24 @@ This repo uses semantic versioning with a GitHub Actions release workflow.
 - Release history is tracked in `CHANGELOG.md`
 - Tags use `vX.Y.Z` format
 
-To publish a new version:
-1. Open GitHub Actions -> `Release` workflow.
-2. Click `Run workflow`.
-3. Choose bump type: `patch`, `minor`, or `major`.
+Release behavior:
+- Every push to `main` creates a `patch` release automatically (`X.Y.Z -> X.Y.(Z+1)`).
+- Manual runs are still available for `minor` and `major` bumps from GitHub Actions -> `Release` -> `Run workflow`.
 
 The workflow will:
 - bump `VERSION`
 - prepend a new entry in `CHANGELOG.md`
-- commit changes to the selected branch
+- commit changes to `main`
 - create and push a git tag
 - publish a GitHub Release
+
+## Contributing
+
+Contributions are welcome.
+
+- Start with [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Please follow [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
+- For security issues, use [SECURITY.md](./SECURITY.md)
 
 ## License
 
