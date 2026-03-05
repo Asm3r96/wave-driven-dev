@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.1.1] - 2026-03-05
+### Changed
+- Release v0.1.1
+
 ## [v0.1.0] - 2026-03-04
 ### Added
 - Initial release of `wave-driven-dev` skills.
