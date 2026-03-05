@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.1.3] - 2026-03-05
+### Changed
+- Release v0.1.3
+
 ## [v0.1.2] - 2026-03-05
 ### Changed
 - Release v0.1.2
