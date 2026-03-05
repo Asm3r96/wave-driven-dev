@@ -40,15 +40,15 @@ jobs:
       - name: Bump version
         id: bump
         shell: bash
-        env:
-          BUMP_TYPE: ${{ github.event.inputs.bump || 'patch' }}
         run: |
           set -euo pipefail
+
+          bump_type="$(jq -r '.inputs.bump // "patch"' "$GITHUB_EVENT_PATH")"
 
           current="$(cat VERSION 2>/dev/null || echo "0.1.0")"
           IFS='.' read -r major minor patch <<< "$current"
 
-          case "$BUMP_TYPE" in
+          case "$bump_type" in
             major)
               major=$((major + 1))
               minor=0
