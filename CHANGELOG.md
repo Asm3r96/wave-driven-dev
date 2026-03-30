@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.2.1] - 2026-03-30
+### Changed
+- Release v0.2.1
+
 ## [v0.2.0] - 2026-03-30
 ### Changed
 - Split the Wave method into `wave-planner` for Codex subagents and `wave-planner-acpx` for acpx-based execution.
