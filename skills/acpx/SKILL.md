@@ -11,7 +11,7 @@ metadata:
 
 Use this skill when you need to run coding agents through `acpx`, manage persistent ACP sessions, queue prompts, or consume structured output from scripts.
 
-Use it especially for Wave-Driven Development execution after `wave-planner` is approved.
+Use it especially for Wave-Driven Development execution after `wave-planner-acpx` is approved.
 
 ## What acpx is
 
@@ -27,6 +27,11 @@ Core capabilities:
 - Session metadata/history inspection (`sessions show`, `sessions history`)
 - Local agent process checks (`status`)
 - Structured output formats (`text`, `json`, `quiet`)
+- `--suppress-reads` for cleaner orchestration output
+- `--prompt-retries` for retrying transient prompt failures
+- Generic model selection via ACP `session/set_model`
+- `--model` support for Codex sessions
+- Experimental flows runtime and replay-related tooling in `v0.4.0`
 
 ## Install
 
@@ -63,6 +68,8 @@ Friendly names:
 - `gemini` -> `gemini`
 - `opencode` -> `npx opencode-ai`
 - `pi` -> `npx pi-acp`
+- `qoder` -> `qodercli --acp`
+- `trae` -> `traecli acp serve`
 
 Rules:
 - Default agent is `codex`.
@@ -108,6 +115,13 @@ acpx codex --no-wait 'after tests, summarize root causes and next steps'
 acpx --format json codex exec 'review changed files' > events.ndjson
 ```
 
+### Retries and quieter logs
+
+```bash
+acpx codex --prompt-retries 2 'run targeted tests and summarize failures'
+acpx --format json --suppress-reads codex exec 'review changed files'
+```
+
 ## Wave-Driven orchestration guidance
 
 When running worker agents in waves:
@@ -136,7 +150,10 @@ Recommended worker handoff format:
 - `--approve-all` auto-approve all requests
 - `--approve-reads` approve reads/searches, prompt for writes
 - `--deny-all` deny all requests
+- `--model <id>` request a model when supported by the target agent/session
 - `--format <fmt>` output: `text`, `json`, `quiet`
+- `--suppress-reads` hide raw read/search output when cleaner logs are useful
+- `--prompt-retries <count>` retry transient prompt failures automatically
 - `--timeout <seconds>` max wait
 - `--ttl <seconds>` queue owner idle TTL
 - `--verbose` debug logs

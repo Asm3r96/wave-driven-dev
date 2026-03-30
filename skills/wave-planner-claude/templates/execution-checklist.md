@@ -7,20 +7,21 @@
 7. Tell the user where the plan file lives.
 8. Confirm Gate 2 approved (execute plan).
 9. For each wave in order:
-- Spawn one named Codex subagent per worker.
-- Use `gpt-5.4-mini` unless the user approved an exception.
-- Tell each worker to read the original plan file first.
-- Send worker prompt with full Wave Plan + worker assignment.
-- Require each worker to append its handoff into the original plan file.
-- Wait for worker handoff and completion marker.
+- Launch one Agent per worker using the Claude Code Agent tool.
+- Use `model: "sonnet"` by default; use `opus` only if user approved an exception.
+- All workers operate on the same working directory.
+- Use `subagent_type: "general-purpose"` for all workers.
+- Include the full plan context in each worker's prompt so agents have the complete picture.
+- Launch all agents in the same wave as parallel Agent calls in a single message.
+- Wait for all agent results and validate handoffs.
 - Validate ownership boundaries and test evidence.
+- Collect handoffs and append them into the original plan file.
 - Remove duplicate worker handoff entries if needed and keep one clean final entry.
-- Close each finished worker subagent.
 10. After all workers in wave are done, start next wave.
 11. Run targeted checks first, then broader final verification checks.
 12. Update docs (existing docs update or new docs for new feature).
-13. If the project uses a status-tracking doc, board, or progress file, update it so completed work and remaining open work are accurate.
+13. If `docs/STATUS.md` exists, update it so completed work and remaining open work are accurate.
 14. Update the plan file status to `Completed` or `Blocked` and add final verification notes.
 15. Before committing, inspect git status and stage only the files that belong to the planned task.
-16. Before closing out the task, re-check any project status-tracking artifact you updated and ensure it still matches the final shipped result.
+16. If `docs/STATUS.md` exists, re-check it before closing out and ensure it matches the final shipped result.
 17. Share a short merged summary with plan path, checks passed, and residual risks or out-of-scope failures.

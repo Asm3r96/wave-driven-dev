@@ -1,140 +1,146 @@
 # wave-driven-dev
 
-Wave-Driven Development for modern coding agents: plan once, execute in waves, parallelize safely, and integrate with control.
+Wave-Driven Development for coding agents: plan once, execute in waves, parallelize safely, and integrate with control.
 
-Tags: `wave-driven-development` `multi-agent` `acpx` `codex` `claude-code` `gemini` `openrouter` `pi` `planning` `orchestration`
-
+Current version: `v0.2.0`
 
 ![wave-driven-dev banner](./assets/wave-driven-dev-banner.png)
 
-`wave-driven-dev` provides two skills:
-- `wave-planner`: builds a contract-first Wave Plan (Wave 0 -> Wave N -> Integration -> Final Verification)
-- `acpx`: runs and controls multi-session agent execution with `acpx` CLI
+## Recommended
 
-## Requirements
+Use `wave-planner` with Codex first.
 
-You need at least one coding agent CLI available in your environment.
+Codex subagents are now good enough that this should be the default path for most users:
+- easier to track worker activity in the Codex app and CLI
+- easier to steer, stop, and inspect running subagents
+- simpler than external orchestration when you are already working in Codex
 
-Examples:
-- Codex
-- Claude Code
-- Gemini
-- OpenRouter
-- Pi
+Docs:
+- [Codex subagents](https://developers.openai.com/codex/subagents)
 
-You also need `acpx`, because Wave-Driven execution uses headless agent sessions from terminal workflows.
+Use `wave-planner-claude` when you want the same Wave method but inside Claude Code.
 
-Install `acpx`:
+Use `wave-planner-acpx` only when you explicitly want external workers through `acpx`, such as mixed-agent runs across Codex, Claude Code, Gemini, or other ACP-compatible tools.
 
-```bash
-npm install -g acpx@latest
-```
+## Skills
 
-Learn more / install from source:
-- [acpx GitHub](https://github.com/openclaw/acpx)
+- `wave-planner`
+  - Codex-first Wave skill
+  - Uses Codex subagents for execution
+- `wave-planner-claude`
+  - Claude Code Wave skill
+  - Uses Claude Code Agent subagents for execution
+- `wave-planner-acpx`
+  - Wave skill for `acpx`-based execution
+  - Use when you want cross-CLI or cross-provider workers
+- `acpx`
+  - Lower-level `acpx` reference skill
+  - Covers CLI usage, sessions, and orchestration details
 
-## Install Skills
+## Install
 
-From your project directory, run:
+Install the skills:
 
 ```bash
 npx skills add https://github.com/Asm3r96/wave-driven-dev
 ```
 
-This uses [skills.sh](https://skills.sh/) and will auto-detect available skills, then ask whether to install to project or global scope.
+Install `acpx` only if you plan to use `wave-planner-acpx`:
 
-## Why Wave-Driven Dev?
+```bash
+npm install -g acpx@latest
+```
 
-Traditional workflow often means one long session with one agent handling everything end-to-end. That usually causes:
+## Quick Start
+
+### Codex path
+
+1. Use `wave-planner`.
+2. Approve Gate 1.
+3. Review the generated Wave Plan.
+4. Approve Gate 2.
+5. Let Codex run the wave with subagents, integrate, and verify.
+
+### `acpx` path
+
+1. Install `acpx`.
+2. Use `wave-planner-acpx`.
+3. Approve Gate 1.
+4. Review the generated Wave Plan.
+5. Approve Gate 2.
+6. Execute the waves through `acpx`.
+
+### Claude Code path
+
+1. Use `wave-planner-claude`.
+2. Approve Gate 1.
+3. Review the generated Wave Plan.
+4. Approve Gate 2.
+5. Let Claude Code run the wave with Agent subagents, integrate, and verify.
+
+<details>
+<summary>Why this method exists</summary>
+
+Traditional single-agent sessions often lead to:
+
 - overloaded context windows
 - slower iteration
 - weak separation of concerns
 - more merge conflicts when tasks are broad
 
-Wave-Driven Dev changes this model:
-- Use a strong "main brain" session to define the plan and architecture.
-- Split implementation into waves of isolated tasks.
-- Run multiple worker agents in parallel per wave.
-- Keep each worker narrowly scoped (files + tests + expected output).
-- Integrate only after each wave completes.
+Wave-Driven Development changes that by using:
 
-Result: better throughput, cleaner ownership, smaller contexts per agent, and safer integration.
+- one Main Brain for planning and integration
+- Wave 0 contracts before implementation
+- parallel workers inside each wave
+- strict ownership boundaries
+- ordered integration and final verification
 
-### Why not just use built-in subagents in a single CLI (for example Claude Code)?
+</details>
 
-Built-in subagents are useful, but they are usually scoped to their own ecosystem. In practice, that means subagents in one CLI typically run models/tools from that same CLI stack.
+<details>
+<summary>Why Codex is the recommended default now</summary>
 
-Wave-Driven Dev is different because it relies on `acpx` as a headless orchestration layer. That lets the Main Brain run workers across different agent CLIs in one coordinated plan, for example:
-- Codex for architecture-heavy reasoning
-- Claude Code for complex implementation tasks
-- Gemini or OpenRouter for smaller, strict, bounded tasks
+OpenAI’s Codex subagents can spawn specialized agents in parallel and collect the results back into one response. Current Codex releases enable subagent workflows by default, and subagent activity is surfaced in the Codex app and CLI.
 
-So instead of being limited to one CLI's subagent system, you can choose the best agent per wave and per task while still keeping one consistent execution method.
+That makes the Codex-native version of Wave-Driven Dev the simplest and most reliable default when you are already inside Codex.
 
-## Method Overview
+</details>
 
-### Roles
+<details>
+<summary>When to use <code>wave-planner-acpx</code> instead</summary>
 
-- Main Brain: plans, defines contracts, integrates, verifies.
-- Worker Agents: execute scoped tasks, return standardized handoffs.
+Use the `acpx` version when:
 
-### Wave sequence
+- you want workers from different agent CLIs
+- you want model/provider routing outside Codex
+- you want session-based external orchestration
+- you need an ACP-based workflow across tools
 
-1. Wave 0 (contracts first)
-2. Wave 1..N (parallel implementation)
-3. Integration Wave
-4. Final Verification Wave
+</details>
 
-```mermaid
-flowchart TD
-    A[Main Brain Session] --> B[Wave Plan + Decision Log]
-    B --> C[Wave 0: Contracts]
-    C --> D[Wave 1: Parallel Worker Agents]
-    D --> E[Wave 2..N: Parallel Worker Agents]
-    E --> F[Integration Wave]
-    F --> G[Final Verification Wave]
-    G --> H[Done]
-```
+<details>
+<summary>Which skill should I pick?</summary>
 
-## Operational Pattern
+- Use `wave-planner` if you are working only in Codex.
+- Use `wave-planner-claude` if you are working only in Claude Code.
+- Use `wave-planner-acpx` if you want the Wave method but need workers from multiple CLIs or providers.
+- Use `acpx` directly only when you need the raw CLI/session/orchestration reference rather than the full Wave skill.
 
-1. Main Brain creates the full Wave Plan.
-2. Main Brain generates worker prompts for each wave.
-3. `acpx` runs worker sessions in parallel (named sessions).
-4. Workers return standardized handoffs.
-5. Main Brain merges in order, resolves integration issues, runs final checks.
+</details>
 
-## Skill List
-
-- `wave-planner`
-  - Produces Vision, Decision Log, Wave 0 Contracts, implementation waves, integration, and verification.
-- `acpx`
-  - Provides command patterns for headless prompt/exec/sessions workflows, queueing, and structured outputs.
-
-## Quickstart
-
-1. Install `acpx`:
-
-```bash
-npm install -g acpx@latest
-```
-
-2. Install skills into your current project or globally (interactive):
-
-```bash
-npx skills add https://github.com/Asm3r96/wave-driven-dev
-```
-
-3. Start with `wave-planner` to generate your plan.
-4. Approve the plan.
-5. Use `acpx` to execute worker sessions wave-by-wave.
-6. Complete integration and final verification before merge.
-
-## Repo Layout
+<details>
+<summary>Repo layout</summary>
 
 ```text
 skills/
   wave-planner/
+    SKILL.md
+    templates/
+  wave-planner-claude/
+    SKILL.md
+    templates/
+  wave-planner-acpx/
     SKILL.md
     templates/
   acpx/
@@ -146,32 +152,13 @@ assets/
   wave-driven-dev-banner.png
 ```
 
-## Versioning and Releases
+</details>
 
-This repo uses semantic versioning with a GitHub Actions release workflow.
+## Versioning
 
 - Current version is tracked in `VERSION`
 - Release history is tracked in `CHANGELOG.md`
-- Tags use `vX.Y.Z` format
-
-Release behavior:
-- Every push to `main` creates a `patch` release automatically (`X.Y.Z -> X.Y.(Z+1)`).
-- Manual runs are still available for `minor` and `major` bumps from GitHub Actions -> `Release` -> `Run workflow`.
-
-The workflow will:
-- bump `VERSION`
-- prepend a new entry in `CHANGELOG.md`
-- commit changes to `main`
-- create and push a git tag
-- publish a GitHub Release
-
-## Contributing
-
-Contributions are welcome.
-
-- Start with [CONTRIBUTING.md](./CONTRIBUTING.md)
-- Please follow [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
-- For security issues, use [SECURITY.md](./SECURITY.md)
+- Tags use `vX.Y.Z`
 
 ## License
 

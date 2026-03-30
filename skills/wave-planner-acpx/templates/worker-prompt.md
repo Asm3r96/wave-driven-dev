@@ -16,7 +16,7 @@ Constraints:
 - Follow Decision Log conventions from the plan.
 - Read the original plan file first to understand the full picture before editing.
 - Keep changes scoped to your assigned task.
-- You are not alone in the codebase. Do not revert other agents' work.
+- You are not alone in the codebase. Do not revert other workers' changes.
 
 Verification requirement:
 {TEST_REQUIREMENT}
@@ -30,17 +30,16 @@ Mandatory test behavior:
 Mandatory plan log behavior:
 - Add a concise execution log entry that can be appended to the shared main plan log.
 - Include files changed and tests added/updated/run.
-- Append your full handoff back into the original plan file, not only in your session reply.
-- If you re-run or report more than once, keep one clean final handoff entry in the original plan file.
+- Return one clean final handoff suitable for appending to the original plan file.
 
 Return exactly this handoff format:
-1. Summary
-2. Files changed
-3. Patch/diffs
-4. How to test (commands + expected results)
-5. Risks/TODOs/Dependency Notes
-6. Main plan log entry
-7. Completion marker: WAVE {WAVE_ID} / {AGENT_NAME} DONE
+1) Summary
+2) Files changed
+3) Patch/diffs
+4) How to test (commands + expected results)
+5) Risks/TODOs/Dependency Notes
+6) Main plan log entry
+7) Completion marker: WAVE {WAVE_ID} / {AGENT_NAME} DONE
 
 Wave Plan:
 {WAVE_PLAN}

@@ -1,6 +1,6 @@
 ---
-name: wave-planner
-description: Plan and execute large multi-step, multi-stack changes with contract-first waves, parallel worker ownership, user approval gates, ordered integration, and final verification/docs updates. Use only when the task spans multiple areas (for example frontend, backend, tests, errors, docs) or has dependency-heavy sequencing.
+name: wave-planner-acpx
+description: Plan and execute large multi-step, multi-stack changes with contract-first waves, parallel worker ownership, user approval gates, ordered integration, and final verification/docs updates through acpx. Use this when you explicitly want cross-CLI or cross-provider workers instead of Codex subagents.
 ---
 
 # Wave Planner
@@ -17,6 +17,7 @@ Produce:
 - Integration wave
 - Final verification wave
 - Documentation update step
+- Saved plan file
 - Ready-to-send worker prompts and execution checklist
 
 ## Workflow
@@ -24,6 +25,7 @@ Produce:
 1. Decide whether to use this skill:
 - Use only if work is large, multi-step, and touches multiple parts/stacks.
 - If not large enough, do not use this skill.
+- If the user is already in Codex and does not need external workers, recommend using `wave-planner` instead.
 2. Ask for Gate 1 user approval before planning:
 - Send a short reason: "I recommend Wave method because <short reason>. Do you agree?"
 - Stop until user accepts or declines.
@@ -31,11 +33,9 @@ Produce:
 - Clarify done criteria and out-of-scope.
 - Build Decision Log (naming, API shape, error model, logging, tests, style constraints).
 - Define Wave 0 contracts first (types/interfaces/schemas, boundaries, API shapes, constants, flags/migrations).
-- Because worker execution uses `gpt-5.4-mini`, make the plan unusually clear and concrete so smaller agents can execute reliably without guessing.
 - Save the plan by default inside `.planning/`; create the folder if it does not exist.
 - Use a clear feature-based filename for the plan.
 4. Choose wave and agent count with balancing rules:
-- Prefer 1-2 waves unless more waves are clearly needed to avoid conflicts or sequencing problems.
 - Use the minimum number of waves that still avoids conflicts.
 - Group independent tasks into the same wave.
 - Move dependency-bound tasks to later waves.
@@ -49,24 +49,23 @@ Produce:
 - Include worker-specific goals, files, constraints, and verification.
 - Include explicit wave order for execution (Wave 0, then Wave 1..N, then Integration, then Final Verification, then Docs).
 - Make each worker prompt highly specific: exact ownership, exact files/modules, exact handoff format, exact verification steps, and any important non-goals.
-- By default, save the full plan to the plan file and do not dump the full plan in chat unless the user explicitly asks.
+- Save the full plan to the plan file by default; do not dump the full plan in chat unless the user explicitly asks.
 7. Ask for Gate 2 user approval before execution:
 - "Plan is ready. Execute now?"
 - Stop until user accepts or declines.
-8. If accepted, execute with Codex swarm/subagents:
-- Spawn one named Codex subagent per worker in the current wave.
-- Use `gpt-5.4-mini` for those worker subagents.
-- The main Codex agent controls the subagents, assigns ownership, monitors progress, validates handoffs, and decides when a wave is complete.
-- Run subagents in parallel inside a wave, but execute waves sequentially.
-- Wait for all subagents in the wave to finish and validate handoffs before starting the next wave.
-- Close finished subagents after completion.
+8. If accepted, load and use `acpx` skill, then execute:
+- Use `acpx` to create/run named sessions per worker in current wave.
+- Use `--prompt-retries` when transient failures are likely or already observed.
+- Use `--suppress-reads` when cleaner logs are helpful for orchestration.
+- Run workers in parallel inside a wave, but execute waves sequentially.
+- Wait for all workers in wave to finish and validate handoffs before next wave.
+- Close worker sessions after completion.
 9. After all waves:
 - Main agent reviews merged result and runs verification tests.
 - Main agent updates existing docs if needed, or adds new docs for new features.
 - Follow existing documentation format and conventions.
 - Main agent updates the original plan file status to `Completed` or `Blocked`.
 - Main agent adds final verification notes to the original plan file.
-- If the project has a status-tracking document or progress board, update it during closeout so completed work and remaining open work stay accurate.
 
 ## Global Rules
 
@@ -76,28 +75,21 @@ Produce:
 - Consistency rule: follow existing repo patterns; do not invent new architecture unless requested.
 - Verifiability rule: each worker includes at least one concrete verification method.
 - Ordering rule: wave order is strict; do not start next wave early.
-- Subagent rule: one named Codex subagent per worker; close finished subagents.
-- Planning quality rule: because workers default to `gpt-5.4-mini`, the main plan must be detailed, concrete, and unambiguous enough that workers do not need to invent missing structure.
+- Session rule: one named session per worker; close finished sessions.
 - Plan-location rule: save plans in `.planning/` by default and create the folder if needed.
 - Worker-context rule: every worker must read the original plan file first for the full picture before editing.
-- Handoff rule: every worker must append its handoff into the original plan file, not only reply in-session.
-- Deduplication rule: if a worker reports more than once, keep one clean final handoff entry in the plan file.
-- Commit-scope rule: before committing, inspect git status and commit only the files that belong to the planned task.
-- Verification-scope rule: run targeted checks first, then broader checks; report unrelated pre-existing failures clearly as outside the feature scope.
-- Status-tracking rule: if the project uses a status-tracking doc, board, or changelog-in-progress, update it as part of closeout so project status reflects what was completed and what remains open.
+- Verification-scope rule: run targeted checks first, then broader final checks; report unrelated pre-existing failures clearly as outside scope.
 - Docs rule: docs update is mandatory in final step (update existing docs or add new).
 
 ## Model Routing Configuration
 
-Use Codex built-in subagents for execution.
+Read `templates/model-routing.md` before choosing models.
 
 Rules:
-- Default all worker/subagent execution to `gpt-5.4-mini`.
-- The main Codex agent remains responsible for planning, orchestration, integration, and final verification.
-- Prefer a very strong plan, strict ownership, and clear contracts over increasing model size.
-- Assume smaller workers perform best when instructions are explicit, scoped, and testable; plan accordingly.
-- If a task is unusually complex and `gpt-5.4-mini` is clearly insufficient, pause and ask the user before using a stronger model.
-- Do not use per-task model routing by default; prefer `gpt-5.4-mini` unless the user approves an exception.
+- Classify each worker task as `hard`, `middle`, or `easy`.
+- Select the first available model from that class's ordered list.
+- If a model fails/unavailable, fallback to the next model in order.
+- If placeholder guidance still exists in routing config, stop and tell user to edit routing first.
 
 ## Mandatory Worker Handoff Format
 
@@ -118,14 +110,6 @@ Always output the final plan using this section order:
 - D) Waves (1..N with agents)
 - E) Integration + Final Verification + Docs
 - F) Worker prompts
-- G) Execution checklist (Codex subagents + wave order)
+- G) Execution checklist (acpx sessions + wave order)
 
 Use templates from `templates/` when helpful.
-
-## Final Response Contract
-
-After execution, keep the user-facing summary short by default and include:
-- what was implemented
-- where the plan file lives
-- what tests/checks passed
-- what is still failing, blocked, or outside scope
